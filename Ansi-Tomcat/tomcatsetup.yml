@@ -1,0 +1,34 @@
+---
+- name: playbook of tomcat
+  hosts: webserver
+  become: true
+  gather_facts: yes
+  tasks:
+  - name: install java-1.8*
+    yum:
+      name: java
+      state: installed
+  - name: download tomcat packages
+    get_url:
+       url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.62/bin/apache-tomcat-9.0.62.tar.gz
+       dest: /opt
+       mode: 0755
+  - name: extract packages
+    unarchive:
+      src: /opt/apache-tomcat-9.0.62.tar.gz
+      dest: /opt
+      remote_src: yes
+  - name: change permission on apache file
+    file:
+      path: /opt/apache-tomcat-9.0.62
+      mode: 0755
+      recurse: yes
+  - name: creating link file start up
+    file:
+      src: /opt/apache-tomcat-9.0.62/bin/startup.sh
+      dest: /usr/local/bin/tomcatup
+      state: link
+  - name: Starting the service
+    command: nohup ./startup.sh
+    args:
+      chdir: /opt/apache-tomcat-9.0.62/bin
